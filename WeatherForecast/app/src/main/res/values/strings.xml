@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">Weather Forecast</string>
+    <string name="edt_city">Enter the city</string>
+    <string name="Authentic">Data is not authentic</string>
+    <string name="Error">Network error</string>
+    <string name="Input">Hãy nhập tên thành phố</string>
+</resources>
