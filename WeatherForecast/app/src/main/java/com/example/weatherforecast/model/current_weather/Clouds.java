@@ -1,4 +1,4 @@
-package com.example.weatherforecast.model.model_current;
+package com.example.weatherforecast.model.current_weather;
 
 public class Clouds {
     private int all;

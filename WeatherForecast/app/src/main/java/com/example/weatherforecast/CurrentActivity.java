@@ -13,7 +13,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.weatherforecast.api.ApiService;
-import com.example.weatherforecast.model.model_current.ThoiTiet;
+import com.example.weatherforecast.model.current_weather.CurrentWeather;
 import com.squareup.picasso.Picasso;
 
 import java.text.SimpleDateFormat;
@@ -43,8 +43,8 @@ public class CurrentActivity extends AppCompatActivity {
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         getInit();
-        setEvent();
 
+        setEvent();
     }
 
     /**
@@ -108,56 +108,52 @@ public class CurrentActivity extends AppCompatActivity {
      * Gọi Api và xử lý dữ liệu trả về
      */
     public void callApi() {
-        ApiService.apiService.convertWeather(city, UNITS, KEY_API).enqueue(new Callback<ThoiTiet>() {
+        ApiService.apiService.convertCurrentWeather(city,UNITS,KEY_API).enqueue(new Callback<CurrentWeather>() {
+
             @Override
-            public void onResponse(Call<ThoiTiet> call, Response<ThoiTiet> response) {
-                ThoiTiet thoiTiet = response.body();
-                if (thoiTiet != null) {
-                    //city
-                    tv_city.setText(thoiTiet.getName());
-                    city = thoiTiet.getName();
-                    //country
-                    tv_country.setText(thoiTiet.getSys().getCountry());
+            public void onResponse(Call<CurrentWeather> call, Response<CurrentWeather> response) {
+                CurrentWeather currentWeather = response.body();
+                if(currentWeather != null){
 
-                    //status
-                    tv_status.setText(thoiTiet.getWeather().get(0).getMain());
+                    //City
+                    tv_city.setText(currentWeather.getName());
+                    city = currentWeather.getName();
 
-                    //temp
-                    String temp = String.valueOf(thoiTiet.getMain().getTemp());
-                    tv_temp.setText(temp + "°C");
+                    //Country
+                    tv_country.setText(currentWeather.getSys().getCountry());
 
-                    //min temp
-                    String minTemp = String.valueOf(thoiTiet.getMain().getTemp_min());
-                    tv_minTemp.setText(minTemp + "°C");
-
-                    //max temp
-                    String maxTemp = String.valueOf(thoiTiet.getMain().getTemp_max());
-                    tv_maxTemp.setText(maxTemp + "°C");
-
-
-                    //Độ ẩm
-                    String humidity = String.valueOf(thoiTiet.getMain().getHumidity());
-                    tv_humidity.setText(humidity + "%");
-
-                    //Lượng mây
-                    String clouds = String.valueOf(thoiTiet.getClouds().getAll());
-                    tv_clouds.setText(clouds);
-
-                    //tốc độ gió
-                    String speed = String.valueOf(thoiTiet.getWind().getSpeed());
-                    tv_wind.setText(speed + "m/s");
-
-                    //Thời gian
-                    tv_updateDay.setText(convertDay(thoiTiet.getDt()));
-
-                    String icon = thoiTiet.getWeather().get(0).getIcon();
+                    //Status
+                    tv_status.setText(currentWeather.getWeather().get(0).getDescription());
+                    String icon = currentWeather.getWeather().get(0).getIcon();
                     Picasso.get().load("http://openweathermap.org/img/wn/" + icon + ".png").into(img_status);
+
+                    //Temp
+                    tv_temp.setText(String.valueOf(currentWeather.getMain().getTemp()) + "°C");
+
+                    //MinTemp
+                    tv_minTemp.setText(String.valueOf(currentWeather.getMain().getTemp_min()) + "°C");
+
+                    //MaxTemp
+                    tv_maxTemp.setText(String.valueOf(currentWeather.getMain().getTemp_max()) + "°C");
+
+                    //Humidity
+                    tv_humidity.setText(String.valueOf(currentWeather.getMain().getHumidity()) + "%");
+
+                    //Cloud
+                    tv_clouds.setText(String.valueOf(currentWeather.getClouds().getAll()));
+
+                    //Wind Speed
+                    tv_wind.setText(String.valueOf(currentWeather.getWind().getSpeed()) + "m/s");
+
+                    //Time
+                    fullDay = convertDay(currentWeather.getDt());
+                    tv_updateDay.setText(fullDay);
                 }
             }
 
             @Override
-            public void onFailure(Call<ThoiTiet> call, Throwable t) {
-                Toast.makeText(CurrentActivity.this, R.string.Error, Toast.LENGTH_SHORT).show();
+            public void onFailure(Call<CurrentWeather> call, Throwable t) {
+                Toast.makeText(CurrentActivity.this, "Network Error ", Toast.LENGTH_SHORT).show();
             }
         });
     }

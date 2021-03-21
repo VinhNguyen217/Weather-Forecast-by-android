@@ -1,13 +1,13 @@
-package com.example.weatherforecast.model.model_hour_daily;
+package com.example.weatherforecast.model.future_weather;
 
-public class WeatherHour {
+public class GeneralWeather {
     private String time;
     private String status;
     private String icon;
     private float minTemp;
     private float maxTemp;
 
-    public WeatherHour(String time, String status, String icon, float minTemp, float maxTemp) {
+    public GeneralWeather(String time, String status, String icon, float minTemp, float maxTemp) {
         this.time = time;
         this.status = status;
         this.icon = icon;

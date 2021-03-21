@@ -13,14 +13,11 @@ import android.widget.Toast;
 
 import com.example.weatherforecast.adapter.AdapterWeatherHour;
 import com.example.weatherforecast.api.ApiService;
-import com.example.weatherforecast.model.model_current.Weather;
-import com.example.weatherforecast.model.model_hour_daily.List;
-import com.example.weatherforecast.model.model_hour_daily.WeatherHour;
-import com.example.weatherforecast.model.model_hour_daily.mThoiTiet;
+import com.example.weatherforecast.model.future_weather.FutureWeather;
+import com.example.weatherforecast.model.future_weather.GeneralWeather;
+import com.example.weatherforecast.model.future_weather.List;
 
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -32,7 +29,7 @@ public class HourActivity extends AppCompatActivity {
     private TextView tv_city_hour, tv_date_hour;
     private RecyclerView rcv_weather_list_hour;
     private AdapterWeatherHour adapterWeatherHour;
-    private ArrayList<WeatherHour> weatherHourList;
+    private ArrayList<GeneralWeather> generalWeatherList;
 
     public static final String KEY_CITY = "key_city";
     public static final String KEY_DATE = "key_date";
@@ -46,10 +43,13 @@ public class HourActivity extends AppCompatActivity {
 
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setTitle("Weather forecast for 3 hours");
+
         Intent intent = getIntent();
         city = intent.getStringExtra(KEY_CITY);
         date = intent.getStringExtra(KEY_DATE);
+
         getInit();
+
         callApi();
     }
 
@@ -57,40 +57,40 @@ public class HourActivity extends AppCompatActivity {
      * Gọi Api và xử lý dữ liệu trả về
      */
     private void callApi() {
-        ApiService.apiService.convertMWeather(city, UNITS, KEY_API).enqueue(new Callback<mThoiTiet>() {
-            @Override
-            public void onResponse(Call<mThoiTiet> call, Response<mThoiTiet> response) {
-                mThoiTiet mThoiTiet = response.body();
+     ApiService.apiService.convertFutureWeather(city,UNITS,KEY_API).enqueue(new Callback<FutureWeather>() {
+         @Override
+         public void onResponse(Call<FutureWeather> call, Response<FutureWeather> response) {
 
-                if (mThoiTiet != null) {
-                    ArrayList<List> list = mThoiTiet.getList();
+             FutureWeather futureWeather = response.body();
+             if(futureWeather != null){
+                 ArrayList<List> list = futureWeather.getList();
 
-                    //City
-                    tv_city_hour.setText(mThoiTiet.getCity().getName());
-                    //Date
-                    tv_date_hour.setText(date);
+                 //City
+                 tv_city_hour.setText(futureWeather.getCity().getName());
+                 //Date
+                 tv_date_hour.setText(date);
 
-                    String Day = list.get(0).getDt_txt().split(" ")[0];
-                    for (int i = 0; i < 8; i++) {
-                        if (Day.equals(list.get(i).getDt_txt().split(" ")[0])) {
-                            String time = list.get(i).getDt_txt().split(" ")[1];
-                            String status = list.get(i).getWeather().get(0).getDescription();
-                            String icon = list.get(i).getWeather().get(0).getIcon();
-                            float minTemp = list.get(i).getMain().getTemp_min();
-                            float maxTemp = list.get(i).getMain().getTemp_max();
-                            weatherHourList.add(new WeatherHour(time, status, icon, minTemp, maxTemp));
-                        }
-                    }
-                    adapterWeatherHour.setWeatherHourList(weatherHourList);
-                    adapterWeatherHour.notifyDataSetChanged();
-                }
-            }
+                 String Day = list.get(0).getDt_txt().split(" ")[0];
+                 for (int i=0;i<8;i++){
+                     if(Day.equals(list.get(i).getDt_txt().split(" ")[0])){
+                         String time = list.get(i).getDt_txt().split(" ")[1];
+                         String status = list.get(i).getWeather().get(0).getDescription();
+                         String icon = list.get(i).getWeather().get(0).getIcon();
+                         float minTemp = list.get(i).getMain().getTemp_min();
+                         float maxTemp = list.get(i).getMain().getTemp_max();
+                         generalWeatherList.add(new GeneralWeather(time,status,icon,minTemp,maxTemp));
+                     }
+                 }
+                 adapterWeatherHour.setGeneralWeatherList(generalWeatherList);
+                 adapterWeatherHour.notifyDataSetChanged();
+             }
+         }
 
-            @Override
-            public void onFailure(Call<mThoiTiet> call, Throwable t) {
-                Toast.makeText(HourActivity.this, R.string.Error, Toast.LENGTH_SHORT).show();
-            }
-        });
+         @Override
+         public void onFailure(Call<FutureWeather> call, Throwable t) {
+             Toast.makeText(HourActivity.this, "Network Error", Toast.LENGTH_SHORT).show();
+         }
+     });
     }
 
     /**
@@ -100,8 +100,8 @@ public class HourActivity extends AppCompatActivity {
         tv_city_hour = (TextView) findViewById(R.id.tv_city_hour);
         tv_date_hour = (TextView) findViewById(R.id.tv_date_hour);
         rcv_weather_list_hour = (RecyclerView) findViewById(R.id.rcv_weather_list_hour);
-        weatherHourList = new ArrayList<>();
-        adapterWeatherHour = new AdapterWeatherHour(HourActivity.this, weatherHourList);
+        generalWeatherList = new ArrayList<>();
+        adapterWeatherHour = new AdapterWeatherHour(HourActivity.this, generalWeatherList);
         rcv_weather_list_hour.setLayoutManager(new LinearLayoutManager(HourActivity.this));
         rcv_weather_list_hour.setAdapter(adapterWeatherHour);
     }

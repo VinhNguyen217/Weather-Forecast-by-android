@@ -11,93 +11,63 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.weatherforecast.R;
-import com.example.weatherforecast.model.model_hour_daily.WeatherHour;
+import com.example.weatherforecast.model.future_weather.FutureWeather;
+import com.example.weatherforecast.model.future_weather.GeneralWeather;
 import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 
-public class AdapterWeatherHour extends RecyclerView.Adapter<AdapterWeatherHour.WeatherHourViewHolder> {
+public class AdapterWeatherHour extends RecyclerView.Adapter<AdapterWeatherHour.WeatherHourViewHolder>{
 
     private Context context;
-    private ArrayList<WeatherHour> weatherHourList;
+    private ArrayList<GeneralWeather> generalWeatherList;
 
-    /**
-     * Hàm tạo
-     * @param context
-     * @param weatherHourList
-     */
-    public AdapterWeatherHour(Context context, ArrayList<WeatherHour> weatherHourList) {
+    public AdapterWeatherHour(Context context, ArrayList<GeneralWeather> generalWeatherList) {
         this.context = context;
-        this.weatherHourList = weatherHourList;
+        this.generalWeatherList = generalWeatherList;
     }
 
-    /**
-     * Trả về 1 danh sách thời tiết theo giờ
-     * @return
-     */
-    public ArrayList<WeatherHour> getWeatherHourList() {
-        return weatherHourList;
+    public void setGeneralWeatherList(ArrayList<GeneralWeather> generalWeatherList) {
+        this.generalWeatherList = generalWeatherList;
     }
 
-    public void setWeatherHourList(ArrayList<WeatherHour> weatherHourList) {
-        this.weatherHourList = weatherHourList;
+    public ArrayList<GeneralWeather> getGeneralWeatherList() {
+        return generalWeatherList;
     }
 
-    /**
-     * Tạo layout hiện thị trên màn hình
-     * @param parent
-     * @param viewType
-     * @return
-     */
     @NonNull
     @Override
     public WeatherHourViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.custom_item_layout, parent, false);
+        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.custom_item_layout,parent,false);
         return new WeatherHourViewHolder(view);
     }
 
-    /**
-     *  Xét dữ liệu hiển thị
-     * @param holder
-     * @param position
-     */
     @Override
     public void onBindViewHolder(@NonNull WeatherHourViewHolder holder, int position) {
-        WeatherHour weatherHour = weatherHourList.get(position);
-        if (weatherHour != null) {
-            holder.tv_hour.setText(weatherHour.getTime());
-            holder.tv_status_hour.setText(weatherHour.getStatus());
-            holder.tv_minTemp_hour.setText(String.valueOf(weatherHour.getMinTemp()) + "°C");
-            holder.tv_maxTemp_hour.setText(String.valueOf(weatherHour.getMaxTemp()) + "°C");
-            Picasso.get().load("http://openweathermap.org/img/wn/" + weatherHour.getIcon() + ".png").into(holder.img_icon_hour);
+        GeneralWeather generalWeather = generalWeatherList.get(position);
+        if(generalWeather != null){
+            holder.tv_hour.setText(generalWeather.getTime());
+            holder.tv_status_hour.setText(generalWeather.getStatus());
+            holder.tv_minTemp_hour.setText(String.valueOf(generalWeather.getMinTemp()) + "°C");
+            holder.tv_maxTemp_hour.setText(String.valueOf(generalWeather.getMaxTemp()) + "°C");
+            Picasso.get().load("http://openweathermap.org/img/wn/" + generalWeather.getIcon() + ".png").into(holder.img_icon_hour);
         }
         return;
     }
 
-    /**
-     * Số lượng item trong danh sách
-     * @return
-     */
     @Override
     public int getItemCount() {
-        if (weatherHourList != null) {
-            return weatherHourList.size();
+        if(generalWeatherList != null){
+            return generalWeatherList.size();
         }
         return 0;
     }
 
-    /**
-     * Tạo WeatherHourViewHolder kế thừa từ ViewHolder trong RecyclerView
-     */
-    public class WeatherHourViewHolder extends RecyclerView.ViewHolder {
+    public class WeatherHourViewHolder extends RecyclerView.ViewHolder{
 
         private TextView tv_hour, tv_status_hour, tv_minTemp_hour, tv_maxTemp_hour;
         private ImageView img_icon_hour;
 
-        /**
-         * Hàm tạo
-         * @param itemView
-         */
         public WeatherHourViewHolder(@NonNull View itemView) {
             super(itemView);
             tv_hour = (TextView) itemView.findViewById(R.id.tv_hour);

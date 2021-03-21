@@ -6,18 +6,16 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.content.Intent;
-import android.database.CursorIndexOutOfBoundsException;
 import android.os.Bundle;
 import android.view.MenuItem;
-import android.widget.ArrayAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.weatherforecast.adapter.AdapterWeatherDaily;
 import com.example.weatherforecast.api.ApiService;
-import com.example.weatherforecast.model.model_hour_daily.List;
-import com.example.weatherforecast.model.model_hour_daily.WeatherHour;
-import com.example.weatherforecast.model.model_hour_daily.mThoiTiet;
+import com.example.weatherforecast.model.future_weather.FutureWeather;
+import com.example.weatherforecast.model.future_weather.GeneralWeather;
+import com.example.weatherforecast.model.future_weather.List;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -33,7 +31,7 @@ public class DailyActivity extends AppCompatActivity {
     private TextView tv_city_daily;
     private RecyclerView rcv_weather_list_daily;
     private AdapterWeatherDaily adapterWeatherDaily;
-    private ArrayList<WeatherHour> weatherHourList;
+    private ArrayList<GeneralWeather> generalWeatherList;
 
     public static final String UNITS = "metric";
     public static final String KEY_API = "2bc77809541a0fc25f0e8f30f8d8dc18";
@@ -45,9 +43,12 @@ public class DailyActivity extends AppCompatActivity {
 
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setTitle("Weather forecast for 5 days");
+
         Intent intent = getIntent();
         city = intent.getStringExtra("key_city");
+
         getInit();
+
         callApi();
     }
 
@@ -55,41 +56,44 @@ public class DailyActivity extends AppCompatActivity {
      * Gọi Api và xử lý dữ liệu trả về
      */
     private void callApi() {
-        ApiService.apiService.convertMWeather(city, UNITS, KEY_API).enqueue(new Callback<mThoiTiet>() {
-            @Override
-            public void onResponse(Call<mThoiTiet> call, Response<mThoiTiet> response) {
-                mThoiTiet mThoiTiet = response.body();
-                if (mThoiTiet != null) {
-                    ArrayList<List> list = mThoiTiet.getList();
-                    //City
-                    tv_city_daily.setText(mThoiTiet.getCity().getName());
+       ApiService.apiService.convertFutureWeather(city,UNITS,KEY_API).enqueue(new Callback<FutureWeather>() {
+           @Override
+           public void onResponse(Call<FutureWeather> call, Response<FutureWeather> response) {
 
-                    String Day = list.get(0).getDt_txt().split(" ")[0];
-                    int count = 0;
-                    for (int i = 0; i < 8; i++) {
-                        if (Day.equals(list.get(0).getDt_txt().split(" ")[0]))
-                            count++;
-                    }
+               FutureWeather futureWeather = response.body();
 
-                    for (int i = 0; i < 5; i++) {
-                        int x = count - 1 + i * 8;
-                        String day = convertDay(list.get(x).getDt());
-                        String status = list.get(x).getWeather().get(0).getDescription();
-                        String icon = list.get(x).getWeather().get(0).getIcon();
-                        float minTemp = list.get(x).getMain().getTemp_min();
-                        float maxTemp = list.get(x).getMain().getTemp_max();
-                        weatherHourList.add(new WeatherHour(day, status, icon, minTemp, maxTemp));
-                    }
-                    adapterWeatherDaily.setWeatherHourList(weatherHourList);
-                    adapterWeatherDaily.notifyDataSetChanged();
-                }
-            }
+               if(futureWeather != null){
+                   ArrayList<List> list = futureWeather.getList();
 
-            @Override
-            public void onFailure(Call<mThoiTiet> call, Throwable t) {
-                Toast.makeText(DailyActivity.this, R.string.Error, Toast.LENGTH_SHORT).show();
-            }
-        });
+                   //City
+                   tv_city_daily.setText(futureWeather.getCity().getName());
+
+                   String Day = list.get(0).getDt_txt().split(" ")[0];
+                   int count = 0;
+                   for (int i=0;i<8;i++){
+                       if(Day.equals(list.get(0).getDt_txt().split(" ")[0]))
+                           count++;
+                   }
+
+                   for(int i=0;i<5;i++){
+                       int x = count -1 +i*8;
+                       String day = list.get(x).getDt_txt().split(" ")[0];
+                       String status = list.get(x).getWeather().get(0).getDescription();
+                       String icon = list.get(x).getWeather().get(0).getIcon();
+                       float minTemp = list.get(x).getMain().getTemp_min();
+                       float maxTemp = list.get(x).getMain().getTemp_max();
+                       generalWeatherList.add(new GeneralWeather(day,status,icon,minTemp,maxTemp));
+                   }
+                   adapterWeatherDaily.setGeneralWeatherList(generalWeatherList);
+                   adapterWeatherDaily.notifyDataSetChanged();
+               }
+           }
+
+           @Override
+           public void onFailure(Call<FutureWeather> call, Throwable t) {
+               Toast.makeText(DailyActivity.this, "Network Error", Toast.LENGTH_SHORT).show();
+           }
+       });
     }
 
     /**
@@ -98,8 +102,8 @@ public class DailyActivity extends AppCompatActivity {
     private void getInit() {
         tv_city_daily = (TextView) findViewById(R.id.tv_city_daily);
         rcv_weather_list_daily = (RecyclerView) findViewById(R.id.rcv_weather_list_daily);
-        weatherHourList = new ArrayList<>();
-        adapterWeatherDaily = new AdapterWeatherDaily(DailyActivity.this, weatherHourList);
+        generalWeatherList = new ArrayList<>();
+        adapterWeatherDaily = new AdapterWeatherDaily(DailyActivity.this, generalWeatherList);
         rcv_weather_list_daily.setLayoutManager(new LinearLayoutManager(this));
         rcv_weather_list_daily.setAdapter(adapterWeatherDaily);
     }
@@ -118,19 +122,6 @@ public class DailyActivity extends AppCompatActivity {
                 overridePendingTransition(R.anim.enter_from_right, R.anim.exit_out_right);
         }
         return super.onOptionsItemSelected(item);
-    }
-
-    /**
-     * Trả vể định dạng ngày-tháng-năm
-     *
-     * @param x
-     * @return
-     */
-    public String convertDay(long x) {
-        Date date = new Date(x * 1000L);
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd-MM-yyyy");
-        String Day = simpleDateFormat.format(date);
-        return Day;
     }
 
     /**

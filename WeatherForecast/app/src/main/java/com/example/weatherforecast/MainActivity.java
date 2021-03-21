@@ -29,8 +29,6 @@ public class MainActivity extends AppCompatActivity {
 
     private EditText edt_city;
     private ImageView img_search;
-
-
     private String city;
 
     @Override
@@ -40,7 +38,9 @@ public class MainActivity extends AppCompatActivity {
 
         ActionBar actionBar = getSupportActionBar();
         actionBar.hide();
+
         getInit();
+
         setEvent();
     }
 
